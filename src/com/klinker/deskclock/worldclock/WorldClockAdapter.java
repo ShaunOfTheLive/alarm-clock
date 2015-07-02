@@ -264,9 +264,7 @@ public class WorldClockAdapter extends BaseAdapter {
             dclock.setVisibility(View.VISIBLE);
             separator.setVisibility(View.VISIBLE);
             aclock.setVisibility(View.GONE);
-            if (Build.VERSION.SDK_INT >= 17) {
-                dclock.setTimeZone(cityObj.mTimeZone);
-            }
+            dclock.setTimeZone(cityObj.mTimeZone);
             Utils.setTimeFormat(dclock,
                     (int)mContext.getResources().getDimension(R.dimen.label_font_size));
         }
