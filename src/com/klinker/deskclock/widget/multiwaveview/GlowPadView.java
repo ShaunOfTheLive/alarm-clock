@@ -30,8 +30,10 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Vibrator;
+import android.support.v4.view.accessibility.AccessibilityRecordCompat;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -39,6 +41,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 
 import com.klinker.deskclock.R;
@@ -907,7 +910,19 @@ public class GlowPadView extends View {
                                 Context.ACCESSIBILITY_SERVICE);
                 if (accessibilityManager.isEnabled()) {
                     String targetContentDescription = getTargetDescription(activeTarget);
-                    announceForAccessibility(targetContentDescription);
+                    if (Build.VERSION.SDK_INT >= 16) {
+                        announceForAccessibility(targetContentDescription);
+                    } else {
+                        AccessibilityEvent acc_event = AccessibilityEvent.obtain(
+                                AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED);
+                        AccessibilityRecordCompat arc = new AccessibilityRecordCompat(acc_event);
+                        arc.setSource(this);
+                        acc_event.setClassName(this.getClass().getName());
+                        acc_event.setPackageName(this.getContext().getPackageName());
+                        acc_event.setEnabled(this.isEnabled());
+                        acc_event.getText().add(targetContentDescription);
+                        accessibilityManager.sendAccessibilityEvent(acc_event);
+                    }
                 }
             }
         }
@@ -1124,7 +1139,24 @@ public class GlowPadView extends View {
             }
         }
         if (utterance.length() > 0) {
-            announceForAccessibility(utterance.toString());
+            final AccessibilityManager accessibilityManager =
+                    (AccessibilityManager) getContext().getSystemService(
+                            Context.ACCESSIBILITY_SERVICE);
+            if (accessibilityManager.isEnabled()) {
+                if (Build.VERSION.SDK_INT >= 16) {
+                    announceForAccessibility(utterance.toString());
+                } else {
+                    AccessibilityEvent acc_event = AccessibilityEvent.obtain(
+                            AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED);
+                    AccessibilityRecordCompat arc = new AccessibilityRecordCompat(acc_event);
+                    arc.setSource(this);
+                    acc_event.setClassName(this.getClass().getName());
+                    acc_event.setPackageName(this.getContext().getPackageName());
+                    acc_event.setEnabled(this.isEnabled());
+                    acc_event.getText().add(utterance.toString());
+                    accessibilityManager.sendAccessibilityEvent(acc_event);
+                }
+            }
         }
     }
 
